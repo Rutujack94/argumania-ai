@@ -23,7 +23,7 @@ function Report() {
     queryFn: () => getDebate({ data: { id } }),
   });
 
-  if (isLoading || !data) {
+  if (isLoading || !data || !data.debate) {
     return (
       <AppShell>
         <div className="text-sm text-muted-foreground">Loading report…</div>
