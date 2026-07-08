@@ -9,38 +9,202 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiTtsRouteImport } from './routes/api/tts'
+import { Route as ApiSttRouteImport } from './routes/api/stt'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as AuthenticatedLeaderboardRouteImport } from './routes/_authenticated.leaderboard'
+import { Route as AuthenticatedKnowledgeRouteImport } from './routes/_authenticated.knowledge'
+import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticated.history'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
+import { Route as AuthenticatedArenaRouteImport } from './routes/_authenticated.arena'
+import { Route as AuthenticatedDebateIdRouteImport } from './routes/_authenticated.debate.$id'
+import { Route as AuthenticatedDebateIdReportRouteImport } from './routes/_authenticated.debate.$id.report'
 
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTtsRoute = ApiTtsRouteImport.update({
+  id: '/api/tts',
+  path: '/api/tts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSttRoute = ApiSttRouteImport.update({
+  id: '/api/stt',
+  path: '/api/stt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedLeaderboardRoute =
+  AuthenticatedLeaderboardRouteImport.update({
+    id: '/leaderboard',
+    path: '/leaderboard',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedKnowledgeRoute = AuthenticatedKnowledgeRouteImport.update({
+  id: '/knowledge',
+  path: '/knowledge',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedHistoryRoute = AuthenticatedHistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedArenaRoute = AuthenticatedArenaRouteImport.update({
+  id: '/arena',
+  path: '/arena',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedDebateIdRoute = AuthenticatedDebateIdRouteImport.update({
+  id: '/debate/$id',
+  path: '/debate/$id',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedDebateIdReportRoute =
+  AuthenticatedDebateIdReportRouteImport.update({
+    id: '/report',
+    path: '/report',
+    getParentRoute: () => AuthenticatedDebateIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/arena': typeof AuthenticatedArenaRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/history': typeof AuthenticatedHistoryRoute
+  '/knowledge': typeof AuthenticatedKnowledgeRoute
+  '/leaderboard': typeof AuthenticatedLeaderboardRoute
+  '/api/chat': typeof ApiChatRoute
+  '/api/stt': typeof ApiSttRoute
+  '/api/tts': typeof ApiTtsRoute
+  '/debate/$id': typeof AuthenticatedDebateIdRouteWithChildren
+  '/debate/$id/report': typeof AuthenticatedDebateIdReportRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/arena': typeof AuthenticatedArenaRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/history': typeof AuthenticatedHistoryRoute
+  '/knowledge': typeof AuthenticatedKnowledgeRoute
+  '/leaderboard': typeof AuthenticatedLeaderboardRoute
+  '/api/chat': typeof ApiChatRoute
+  '/api/stt': typeof ApiSttRoute
+  '/api/tts': typeof ApiTtsRoute
+  '/debate/$id': typeof AuthenticatedDebateIdRouteWithChildren
+  '/debate/$id/report': typeof AuthenticatedDebateIdReportRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/_authenticated/arena': typeof AuthenticatedArenaRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/history': typeof AuthenticatedHistoryRoute
+  '/_authenticated/knowledge': typeof AuthenticatedKnowledgeRoute
+  '/_authenticated/leaderboard': typeof AuthenticatedLeaderboardRoute
+  '/api/chat': typeof ApiChatRoute
+  '/api/stt': typeof ApiSttRoute
+  '/api/tts': typeof ApiTtsRoute
+  '/_authenticated/debate/$id': typeof AuthenticatedDebateIdRouteWithChildren
+  '/_authenticated/debate/$id/report': typeof AuthenticatedDebateIdReportRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/arena'
+    | '/dashboard'
+    | '/history'
+    | '/knowledge'
+    | '/leaderboard'
+    | '/api/chat'
+    | '/api/stt'
+    | '/api/tts'
+    | '/debate/$id'
+    | '/debate/$id/report'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/arena'
+    | '/dashboard'
+    | '/history'
+    | '/knowledge'
+    | '/leaderboard'
+    | '/api/chat'
+    | '/api/stt'
+    | '/api/tts'
+    | '/debate/$id'
+    | '/debate/$id/report'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/arena'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/history'
+    | '/_authenticated/knowledge'
+    | '/_authenticated/leaderboard'
+    | '/api/chat'
+    | '/api/stt'
+    | '/api/tts'
+    | '/_authenticated/debate/$id'
+    | '/_authenticated/debate/$id/report'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  ApiChatRoute: typeof ApiChatRoute
+  ApiSttRoute: typeof ApiSttRoute
+  ApiTtsRoute: typeof ApiTtsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +212,122 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/tts': {
+      id: '/api/tts'
+      path: '/api/tts'
+      fullPath: '/api/tts'
+      preLoaderRoute: typeof ApiTtsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/stt': {
+      id: '/api/stt'
+      path: '/api/stt'
+      fullPath: '/api/stt'
+      preLoaderRoute: typeof ApiSttRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/leaderboard': {
+      id: '/_authenticated/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof AuthenticatedLeaderboardRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/knowledge': {
+      id: '/_authenticated/knowledge'
+      path: '/knowledge'
+      fullPath: '/knowledge'
+      preLoaderRoute: typeof AuthenticatedKnowledgeRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/history': {
+      id: '/_authenticated/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof AuthenticatedHistoryRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/arena': {
+      id: '/_authenticated/arena'
+      path: '/arena'
+      fullPath: '/arena'
+      preLoaderRoute: typeof AuthenticatedArenaRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/debate/$id': {
+      id: '/_authenticated/debate/$id'
+      path: '/debate/$id'
+      fullPath: '/debate/$id'
+      preLoaderRoute: typeof AuthenticatedDebateIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/debate/$id/report': {
+      id: '/_authenticated/debate/$id/report'
+      path: '/report'
+      fullPath: '/debate/$id/report'
+      preLoaderRoute: typeof AuthenticatedDebateIdReportRouteImport
+      parentRoute: typeof AuthenticatedDebateIdRoute
+    }
   }
 }
 
+interface AuthenticatedDebateIdRouteChildren {
+  AuthenticatedDebateIdReportRoute: typeof AuthenticatedDebateIdReportRoute
+}
+
+const AuthenticatedDebateIdRouteChildren: AuthenticatedDebateIdRouteChildren = {
+  AuthenticatedDebateIdReportRoute: AuthenticatedDebateIdReportRoute,
+}
+
+const AuthenticatedDebateIdRouteWithChildren =
+  AuthenticatedDebateIdRoute._addFileChildren(
+    AuthenticatedDebateIdRouteChildren,
+  )
+
+interface AuthenticatedRouteChildren {
+  AuthenticatedArenaRoute: typeof AuthenticatedArenaRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedHistoryRoute: typeof AuthenticatedHistoryRoute
+  AuthenticatedKnowledgeRoute: typeof AuthenticatedKnowledgeRoute
+  AuthenticatedLeaderboardRoute: typeof AuthenticatedLeaderboardRoute
+  AuthenticatedDebateIdRoute: typeof AuthenticatedDebateIdRouteWithChildren
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedArenaRoute: AuthenticatedArenaRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedHistoryRoute: AuthenticatedHistoryRoute,
+  AuthenticatedKnowledgeRoute: AuthenticatedKnowledgeRoute,
+  AuthenticatedLeaderboardRoute: AuthenticatedLeaderboardRoute,
+  AuthenticatedDebateIdRoute: AuthenticatedDebateIdRouteWithChildren,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  AuthRoute: AuthRoute,
+  ApiChatRoute: ApiChatRoute,
+  ApiSttRoute: ApiSttRoute,
+  ApiTtsRoute: ApiTtsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
