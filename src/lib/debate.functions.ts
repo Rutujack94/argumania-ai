@@ -193,6 +193,47 @@ export const evaluateDebate = createServerFn({ method: "POST" })
         .eq("id", context.userId);
     }
 
+    // MEMORY AGENT — merge findings into long-term profile
+    try {
+      const nextMemory = await agents.updateMemory({ prior: priorMemory, report });
+      await context.supabase.from("user_memory").upsert(
+        {
+          user_id: context.userId,
+          strengths: nextMemory.strengths,
+          weaknesses: nextMemory.weaknesses,
+          recurring_fallacies: nextMemory.recurring_fallacies,
+          style_notes: nextMemory.style_notes,
+          preferences: nextMemory.preferences as Record<string, unknown>,
+          debates_analyzed: (memRes.data?.debates_analyzed ?? 0) + 1,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id" },
+      );
+
+      // RECOMMENDATION AGENT — seed next-topic suggestions
+      const recentRes = await context.supabase
+        .from("debates")
+        .select("topic")
+        .eq("user_id", context.userId)
+        .order("created_at", { ascending: false })
+        .limit(10);
+      const recentTopics = (recentRes.data ?? []).map((r) => r.topic);
+      const recs = await agents.recommendNext(nextMemory, recentTopics, 4);
+      if (recs.length > 0) {
+        await context.supabase.from("recommendations").insert(
+          recs.map((r) => ({
+            user_id: context.userId,
+            topic: r.topic,
+            rationale: r.rationale,
+            difficulty: r.difficulty,
+            focus_skill: r.focus_skill,
+          })),
+        );
+      }
+    } catch (err) {
+      console.error("memory/recommendation update failed", err);
+    }
+
     return { report };
   });
 
