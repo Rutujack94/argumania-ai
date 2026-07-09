@@ -259,3 +259,196 @@ export const getLeaderboard = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     return data ?? [];
   });
+
+/* ============================================================
+ * LIVE TURN ANALYSIS — runs FactChecker + Fallacy + Emotion + SpeechEval
+ * in parallel on the user's latest turn. Fast, cached to turn_analyses.
+ * ============================================================ */
+export const analyzeTurn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        debateId: z.string().uuid(),
+        turnIndex: z.number().int().min(0),
+        text: z.string().min(1).max(6000),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const agents = await import("./debate-agents.server");
+    const hits = await agents.retrieveEvidence(
+      context.supabase,
+      data.text,
+      context.userId,
+      3,
+    );
+    const analysis = await agents.runLiveTurnGraph(data.text, hits);
+    await context.supabase.from("turn_analyses").insert({
+      debate_id: data.debateId,
+      user_id: context.userId,
+      turn_index: data.turnIndex,
+      fact_flags: JSON.parse(JSON.stringify(analysis.fact_flags)),
+      fallacies: JSON.parse(JSON.stringify(analysis.fallacies)),
+      emotion: JSON.parse(JSON.stringify(analysis.emotion)),
+      clarity_score: analysis.clarity_score,
+    });
+    return analysis;
+  });
+
+/* ============================================================
+ * ARGUMENT AGENT — draft an argument for the USER on request.
+ * ============================================================ */
+export const draftArgument = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ debateId: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const agents = await import("./debate-agents.server");
+    const [{ data: debate }, { data: msgs }] = await Promise.all([
+      context.supabase.from("debates").select("*").eq("id", data.debateId).maybeSingle(),
+      context.supabase
+        .from("debate_messages")
+        .select("role, content")
+        .eq("debate_id", data.debateId)
+        .order("turn_index", { ascending: true }),
+    ]);
+    if (!debate) throw new Error("Debate not found");
+    const history = ((msgs ?? []) as Array<{ role: string; content: string }>).map((m) => ({
+      role: m.role as "user" | "opponent",
+      content: m.content,
+    }));
+    const hits = await agents.retrieveEvidence(
+      context.supabase,
+      `${debate.topic}\n${history[history.length - 1]?.content ?? ""}`,
+      context.userId,
+      4,
+    );
+    const draft = await agents.draftUserArgument({
+      topic: debate.topic,
+      userStance: debate.user_stance,
+      aiPersona: debate.ai_persona,
+      difficulty: debate.difficulty,
+      turnIndex: history.length,
+      history,
+      ragHits: hits,
+    });
+    return { draft, citations: hits.map((h, i) => ({ index: i + 1, title: h.title, source: h.source })) };
+  });
+
+/* ============================================================
+ * CROSS-EXAMINATION AGENT — generate probing questions.
+ * ============================================================ */
+export const crossExamine = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ topic: z.string().min(3), argument: z.string().min(10) }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    const agents = await import("./debate-agents.server");
+    const questions = await agents.generateCrossExamination(data.topic, data.argument, 3);
+    return { questions };
+  });
+
+/* ============================================================
+ * MEMORY AGENT surfaces (get / clear)
+ * ============================================================ */
+export const getMemory = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data } = await context.supabase
+      .from("user_memory")
+      .select("*")
+      .eq("user_id", context.userId)
+      .maybeSingle();
+    return (
+      data ?? {
+        user_id: context.userId,
+        strengths: [],
+        weaknesses: [],
+        recurring_fallacies: [],
+        style_notes: "",
+        preferences: {},
+        debates_analyzed: 0,
+        updated_at: null,
+      }
+    );
+  });
+
+export const clearMemory = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await context.supabase.from("user_memory").delete().eq("user_id", context.userId);
+    return { ok: true };
+  });
+
+/* ============================================================
+ * RECOMMENDATION AGENT surfaces
+ * ============================================================ */
+export const getRecommendations = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("recommendations")
+      .select("*")
+      .is("consumed_at", null)
+      .order("created_at", { ascending: false })
+      .limit(12);
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  });
+
+export const generateRecommendations = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const agents = await import("./debate-agents.server");
+    const { data: mem } = await context.supabase
+      .from("user_memory")
+      .select("*")
+      .eq("user_id", context.userId)
+      .maybeSingle();
+    const memory = mem
+      ? {
+          strengths: (mem.strengths as string[]) ?? [],
+          weaknesses: (mem.weaknesses as string[]) ?? [],
+          recurring_fallacies: (mem.recurring_fallacies as string[]) ?? [],
+          style_notes: mem.style_notes ?? "",
+          preferences: (mem.preferences as Record<string, unknown>) ?? {},
+        }
+      : { strengths: [], weaknesses: [], recurring_fallacies: [], style_notes: "", preferences: {} };
+
+    const { data: recent } = await context.supabase
+      .from("debates")
+      .select("topic")
+      .eq("user_id", context.userId)
+      .order("created_at", { ascending: false })
+      .limit(10);
+    const recs = await agents.recommendNext(
+      memory,
+      (recent ?? []).map((r) => r.topic),
+      4,
+    );
+    if (recs.length > 0) {
+      await context.supabase.from("recommendations").insert(
+        recs.map((r) => ({
+          user_id: context.userId,
+          topic: r.topic,
+          rationale: r.rationale,
+          difficulty: r.difficulty,
+          focus_skill: r.focus_skill,
+        })),
+      );
+    }
+    return { recommendations: recs };
+  });
+
+export const consumeRecommendation = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await context.supabase
+      .from("recommendations")
+      .update({ consumed_at: new Date().toISOString() })
+      .eq("id", data.id)
+      .eq("user_id", context.userId);
+    return { ok: true };
+  });
