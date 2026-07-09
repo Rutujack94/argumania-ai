@@ -203,7 +203,7 @@ export const evaluateDebate = createServerFn({ method: "POST" })
           weaknesses: nextMemory.weaknesses,
           recurring_fallacies: nextMemory.recurring_fallacies,
           style_notes: nextMemory.style_notes,
-          preferences: nextMemory.preferences as Record<string, unknown>,
+          preferences: JSON.parse(JSON.stringify(nextMemory.preferences ?? {})),
           debates_analyzed: (memRes.data?.debates_analyzed ?? 0) + 1,
           updated_at: new Date().toISOString(),
         },
