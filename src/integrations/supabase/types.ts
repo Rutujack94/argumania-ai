@@ -249,6 +249,116 @@ export type Database = {
         }
         Relationships: []
       }
+      recommendations: {
+        Row: {
+          consumed_at: string | null
+          created_at: string
+          difficulty: string
+          focus_skill: string | null
+          id: string
+          rationale: string
+          topic: string
+          user_id: string
+        }
+        Insert: {
+          consumed_at?: string | null
+          created_at?: string
+          difficulty?: string
+          focus_skill?: string | null
+          id?: string
+          rationale: string
+          topic: string
+          user_id: string
+        }
+        Update: {
+          consumed_at?: string | null
+          created_at?: string
+          difficulty?: string
+          focus_skill?: string | null
+          id?: string
+          rationale?: string
+          topic?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      turn_analyses: {
+        Row: {
+          clarity_score: number | null
+          created_at: string
+          debate_id: string
+          emotion: Json
+          fact_flags: Json
+          fallacies: Json
+          id: string
+          turn_index: number
+          user_id: string
+        }
+        Insert: {
+          clarity_score?: number | null
+          created_at?: string
+          debate_id: string
+          emotion?: Json
+          fact_flags?: Json
+          fallacies?: Json
+          id?: string
+          turn_index: number
+          user_id: string
+        }
+        Update: {
+          clarity_score?: number | null
+          created_at?: string
+          debate_id?: string
+          emotion?: Json
+          fact_flags?: Json
+          fallacies?: Json
+          id?: string
+          turn_index?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "turn_analyses_debate_id_fkey"
+            columns: ["debate_id"]
+            isOneToOne: false
+            referencedRelation: "debates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_memory: {
+        Row: {
+          debates_analyzed: number
+          preferences: Json
+          recurring_fallacies: Json
+          strengths: Json
+          style_notes: string
+          updated_at: string
+          user_id: string
+          weaknesses: Json
+        }
+        Insert: {
+          debates_analyzed?: number
+          preferences?: Json
+          recurring_fallacies?: Json
+          strengths?: Json
+          style_notes?: string
+          updated_at?: string
+          user_id: string
+          weaknesses?: Json
+        }
+        Update: {
+          debates_analyzed?: number
+          preferences?: Json
+          recurring_fallacies?: Json
+          strengths?: Json
+          style_notes?: string
+          updated_at?: string
+          user_id?: string
+          weaknesses?: Json
+        }
+        Relationships: []
+      }
     }
     Views: {
       leaderboard: {
