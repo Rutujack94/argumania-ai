@@ -318,16 +318,16 @@ export const draftArgument = createServerFn({ method: "POST" })
       content: m.content,
     }));
     const hits = await agents.retrieveEvidence(
-      context.supabase,
+      context.supabase as unknown as Parameters<typeof agents.retrieveEvidence>[0],
       `${debate.topic}\n${history[history.length - 1]?.content ?? ""}`,
       context.userId,
       4,
     );
     const draft = await agents.draftUserArgument({
       topic: debate.topic,
-      userStance: debate.user_stance,
+      userStance: debate.user_stance as "for" | "against",
       aiPersona: debate.ai_persona,
-      difficulty: debate.difficulty,
+      difficulty: debate.difficulty as "beginner" | "intermediate" | "expert",
       turnIndex: history.length,
       history,
       ragHits: hits,
