@@ -101,7 +101,7 @@ export const evaluateDebate = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ debateId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { judgeDebate } = await import("./debate-agents.server");
+    const agents = await import("./debate-agents.server");
     const debRes = await context.supabase
       .from("debates")
       .select("*")
@@ -119,10 +119,27 @@ export const evaluateDebate = createServerFn({ method: "POST" })
     const msgs = (msgsRes.data ?? []) as Array<{ role: string; content: string }>;
     if (msgs.length < 2) throw new Error("Not enough turns to evaluate.");
 
-    const report = await judgeDebate({
+    // Load prior memory to personalize judging
+    const memRes = await context.supabase
+      .from("user_memory")
+      .select("*")
+      .eq("user_id", context.userId)
+      .maybeSingle();
+    const priorMemory = memRes.data
+      ? {
+          strengths: (memRes.data.strengths as string[]) ?? [],
+          weaknesses: (memRes.data.weaknesses as string[]) ?? [],
+          recurring_fallacies: (memRes.data.recurring_fallacies as string[]) ?? [],
+          style_notes: memRes.data.style_notes ?? "",
+          preferences: (memRes.data.preferences as Record<string, unknown>) ?? {},
+        }
+      : { strengths: [], weaknesses: [], recurring_fallacies: [], style_notes: "", preferences: {} };
+
+    const report = await agents.judgeDebate({
       topic: debate.topic,
       userStance: debate.user_stance,
       transcript: msgs,
+      memory: priorMemory,
     });
 
     const { error: sErr } = await context.supabase.from("debate_scores").upsert(
