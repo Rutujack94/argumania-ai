@@ -278,7 +278,7 @@ export const analyzeTurn = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const agents = await import("./debate-agents.server");
     const hits = await agents.retrieveEvidence(
-      context.supabase,
+      context.supabase as unknown as Parameters<typeof agents.retrieveEvidence>[0],
       data.text,
       context.userId,
       3,
