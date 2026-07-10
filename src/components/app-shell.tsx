@@ -7,10 +7,14 @@ import { toast } from "sonner";
 const NAV = [
   { to: "/dashboard", label: "Dashboard" },
   { to: "/arena", label: "Arena" },
+  { to: "/analytics", label: "Analytics" },
+  { to: "/achievements", label: "Badges" },
   { to: "/history", label: "History" },
   { to: "/leaderboard", label: "Leaderboard" },
   { to: "/knowledge", label: "Knowledge" },
+  { to: "/admin", label: "Admin" },
 ] as const;
+
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { user } = useAuth();

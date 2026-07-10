@@ -21,6 +21,9 @@ import { Route as AuthenticatedKnowledgeRouteImport } from './routes/_authentica
 import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticated.history'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as AuthenticatedArenaRouteImport } from './routes/_authenticated.arena'
+import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated.analytics'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated.admin'
+import { Route as AuthenticatedAchievementsRouteImport } from './routes/_authenticated.achievements'
 import { Route as AuthenticatedDebateIdRouteImport } from './routes/_authenticated.debate.$id'
 import { Route as AuthenticatedDebateIdReportRouteImport } from './routes/_authenticated.debate.$id.report'
 
@@ -84,6 +87,22 @@ const AuthenticatedArenaRoute = AuthenticatedArenaRouteImport.update({
   path: '/arena',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAchievementsRoute =
+  AuthenticatedAchievementsRouteImport.update({
+    id: '/achievements',
+    path: '/achievements',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedDebateIdRoute = AuthenticatedDebateIdRouteImport.update({
   id: '/debate/$id',
   path: '/debate/$id',
@@ -100,6 +119,9 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/achievements': typeof AuthenticatedAchievementsRoute
+  '/admin': typeof AuthenticatedAdminRoute
+  '/analytics': typeof AuthenticatedAnalyticsRoute
   '/arena': typeof AuthenticatedArenaRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/history': typeof AuthenticatedHistoryRoute
@@ -115,6 +137,9 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/achievements': typeof AuthenticatedAchievementsRoute
+  '/admin': typeof AuthenticatedAdminRoute
+  '/analytics': typeof AuthenticatedAnalyticsRoute
   '/arena': typeof AuthenticatedArenaRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/history': typeof AuthenticatedHistoryRoute
@@ -132,6 +157,9 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/auth': typeof AuthRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/_authenticated/achievements': typeof AuthenticatedAchievementsRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/arena': typeof AuthenticatedArenaRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/history': typeof AuthenticatedHistoryRoute
@@ -149,6 +177,9 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/sitemap.xml'
+    | '/achievements'
+    | '/admin'
+    | '/analytics'
     | '/arena'
     | '/dashboard'
     | '/history'
@@ -164,6 +195,9 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/sitemap.xml'
+    | '/achievements'
+    | '/admin'
+    | '/analytics'
     | '/arena'
     | '/dashboard'
     | '/history'
@@ -180,6 +214,9 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/sitemap.xml'
+    | '/_authenticated/achievements'
+    | '/_authenticated/admin'
+    | '/_authenticated/analytics'
     | '/_authenticated/arena'
     | '/_authenticated/dashboard'
     | '/_authenticated/history'
@@ -288,6 +325,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedArenaRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/analytics': {
+      id: '/_authenticated/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/achievements': {
+      id: '/_authenticated/achievements'
+      path: '/achievements'
+      fullPath: '/achievements'
+      preLoaderRoute: typeof AuthenticatedAchievementsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/debate/$id': {
       id: '/_authenticated/debate/$id'
       path: '/debate/$id'
@@ -319,6 +377,9 @@ const AuthenticatedDebateIdRouteWithChildren =
   )
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedAchievementsRoute: typeof AuthenticatedAchievementsRoute
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedArenaRoute: typeof AuthenticatedArenaRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedHistoryRoute: typeof AuthenticatedHistoryRoute
@@ -328,6 +389,9 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAchievementsRoute: AuthenticatedAchievementsRoute,
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedArenaRoute: AuthenticatedArenaRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedHistoryRoute: AuthenticatedHistoryRoute,

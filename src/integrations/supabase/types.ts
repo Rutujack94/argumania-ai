@@ -14,6 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          code: string
+          created_at: string
+          criteria: Json
+          description: string
+          icon: string
+          id: string
+          title: string
+          xp_reward: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          criteria?: Json
+          description: string
+          icon?: string
+          id?: string
+          title: string
+          xp_reward?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          criteria?: Json
+          description?: string
+          icon?: string
+          id?: string
+          title?: string
+          xp_reward?: number
+        }
+        Relationships: []
+      }
+      daily_challenges: {
+        Row: {
+          challenge_date: string
+          created_at: string
+          difficulty: string
+          focus_skill: string | null
+          id: string
+          topic: string
+          xp_reward: number
+        }
+        Insert: {
+          challenge_date: string
+          created_at?: string
+          difficulty?: string
+          focus_skill?: string | null
+          id?: string
+          topic: string
+          xp_reward?: number
+        }
+        Update: {
+          challenge_date?: string
+          created_at?: string
+          difficulty?: string
+          focus_skill?: string | null
+          id?: string
+          topic?: string
+          xp_reward?: number
+        }
+        Relationships: []
+      }
       debate_messages: {
         Row: {
           citations: Json | null
@@ -220,10 +283,14 @@ export type Database = {
           created_at: string
           display_name: string | null
           id: string
+          last_active_date: string | null
+          level: number
           persona: string | null
+          streak_days: number
           total_debates: number
           total_wins: number
           updated_at: string
+          xp: number
         }
         Insert: {
           avatar_url?: string | null
@@ -231,10 +298,14 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id: string
+          last_active_date?: string | null
+          level?: number
           persona?: string | null
+          streak_days?: number
           total_debates?: number
           total_wins?: number
           updated_at?: string
+          xp?: number
         }
         Update: {
           avatar_url?: string | null
@@ -242,10 +313,14 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          last_active_date?: string | null
+          level?: number
           persona?: string | null
+          streak_days?: number
           total_debates?: number
           total_wins?: number
           updated_at?: string
+          xp?: number
         }
         Relationships: []
       }
@@ -326,6 +401,67 @@ export type Database = {
           },
         ]
       }
+      user_achievements: {
+        Row: {
+          achievement_id: string
+          id: string
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          achievement_id: string
+          id?: string
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string
+          id?: string
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_challenges: {
+        Row: {
+          challenge_id: string
+          completed_at: string
+          debate_id: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          challenge_id: string
+          completed_at?: string
+          debate_id?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          challenge_id?: string
+          completed_at?: string
+          debate_id?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_challenges_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "daily_challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_memory: {
         Row: {
           debates_analyzed: number
@@ -359,6 +495,54 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      xp_events: {
+        Row: {
+          amount: number
+          created_at: string
+          debate_id: string | null
+          id: string
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          debate_id?: string | null
+          id?: string
+          reason: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          debate_id?: string | null
+          id?: string
+          reason?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       leaderboard: {
@@ -375,6 +559,13 @@ export type Database = {
       }
     }
     Functions: {
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       match_knowledge: {
         Args: {
           match_count?: number
@@ -391,7 +582,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -518,6 +709,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const
