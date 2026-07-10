@@ -234,8 +234,28 @@ export const evaluateDebate = createServerFn({ method: "POST" })
       console.error("memory/recommendation update failed", err);
     }
 
+    // GAMIFICATION — award XP for completing debate + bonus for high score / win
+    try {
+      const { awardXp } = await import("./gamification.functions");
+      const base = 50;
+      const scoreBonus = Math.max(0, Math.round((report.overall - 60) * 2));
+      const winBonus = report.winner === "user" ? 75 : 0;
+      const total = base + scoreBonus + winBonus;
+      await awardXp({
+        data: {
+          amount: total,
+          reason: `Debate completed (${report.overall}/100${report.winner === "user" ? " · win" : ""})`,
+          debateId: data.debateId,
+          debateScore: report.overall,
+        },
+      });
+    } catch (err) {
+      console.error("xp award failed", err);
+    }
+
     return { report };
   });
+
 
 export const suggestTopicsFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
