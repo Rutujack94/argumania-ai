@@ -22,6 +22,7 @@ import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as AuthenticatedArenaRouteImport } from './routes/_authenticated.arena'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated.analytics'
+import { Route as AuthenticatedAchievementsRouteImport } from './routes/_authenticated.achievements'
 import { Route as AuthenticatedDebateIdRouteImport } from './routes/_authenticated.debate.$id'
 import { Route as AuthenticatedDebateIdReportRouteImport } from './routes/_authenticated.debate.$id.report'
 
@@ -90,6 +91,12 @@ const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAchievementsRoute =
+  AuthenticatedAchievementsRouteImport.update({
+    id: '/achievements',
+    path: '/achievements',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedDebateIdRoute = AuthenticatedDebateIdRouteImport.update({
   id: '/debate/$id',
   path: '/debate/$id',
@@ -106,6 +113,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/achievements': typeof AuthenticatedAchievementsRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/arena': typeof AuthenticatedArenaRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -122,6 +130,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/achievements': typeof AuthenticatedAchievementsRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/arena': typeof AuthenticatedArenaRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -140,6 +149,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/auth': typeof AuthRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/_authenticated/achievements': typeof AuthenticatedAchievementsRoute
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/arena': typeof AuthenticatedArenaRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -158,6 +168,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/sitemap.xml'
+    | '/achievements'
     | '/analytics'
     | '/arena'
     | '/dashboard'
@@ -174,6 +185,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/sitemap.xml'
+    | '/achievements'
     | '/analytics'
     | '/arena'
     | '/dashboard'
@@ -191,6 +203,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/sitemap.xml'
+    | '/_authenticated/achievements'
     | '/_authenticated/analytics'
     | '/_authenticated/arena'
     | '/_authenticated/dashboard'
@@ -307,6 +320,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/achievements': {
+      id: '/_authenticated/achievements'
+      path: '/achievements'
+      fullPath: '/achievements'
+      preLoaderRoute: typeof AuthenticatedAchievementsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/debate/$id': {
       id: '/_authenticated/debate/$id'
       path: '/debate/$id'
@@ -338,6 +358,7 @@ const AuthenticatedDebateIdRouteWithChildren =
   )
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedAchievementsRoute: typeof AuthenticatedAchievementsRoute
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedArenaRoute: typeof AuthenticatedArenaRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -348,6 +369,7 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAchievementsRoute: AuthenticatedAchievementsRoute,
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedArenaRoute: AuthenticatedArenaRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
