@@ -234,27 +234,70 @@ export const evaluateDebate = createServerFn({ method: "POST" })
       console.error("memory/recommendation update failed", err);
     }
 
-    // GAMIFICATION — award XP for completing debate + bonus for high score / win
+    // GAMIFICATION — award XP inline (avoid server-fn-to-server-fn RPC)
     try {
-      const { awardXp } = await import("./gamification.functions");
       const base = 50;
       const scoreBonus = Math.max(0, Math.round((report.overall - 60) * 2));
       const winBonus = report.winner === "user" ? 75 : 0;
       const total = base + scoreBonus + winBonus;
-      await awardXp({
-        data: {
-          amount: total,
-          reason: `Debate completed (${report.overall}/100${report.winner === "user" ? " · win" : ""})`,
-          debateId: data.debateId,
-          debateScore: report.overall,
-        },
+      await context.supabase.from("xp_events").insert({
+        user_id: context.userId,
+        amount: total,
+        reason: `Debate completed (${report.overall}/100${report.winner === "user" ? " · win" : ""})`,
+        debate_id: data.debateId,
       });
+      const { data: prof } = await context.supabase
+        .from("profiles")
+        .select("xp,streak_days,last_active_date,total_debates,total_wins")
+        .eq("id", context.userId)
+        .maybeSingle();
+      const today = new Date().toISOString().slice(0, 10);
+      let streak = prof?.streak_days ?? 0;
+      if (prof?.last_active_date !== today) {
+        const y = new Date(Date.now() - 86400_000).toISOString().slice(0, 10);
+        streak = prof?.last_active_date === y ? streak + 1 : 1;
+      }
+      const newXp = (prof?.xp ?? 0) + total;
+      // Quadratic level curve: 100 * level^1.6
+      let newLevel = 1;
+      while (newXp >= Math.round(100 * Math.pow(newLevel + 1, 1.6))) newLevel++;
+      await context.supabase
+        .from("profiles")
+        .update({ xp: newXp, level: newLevel, streak_days: streak, last_active_date: today })
+        .eq("id", context.userId);
+
+      // Evaluate achievements
+      const [{ data: achievements }, { data: owned }] = await Promise.all([
+        context.supabase.from("achievements").select("id,code,criteria,xp_reward"),
+        context.supabase
+          .from("user_achievements")
+          .select("achievement_id")
+          .eq("user_id", context.userId),
+      ]);
+      const ownedSet = new Set((owned ?? []).map((r) => r.achievement_id));
+      const stats: Record<string, number> = {
+        debates_count: (prof?.total_debates ?? 0) + 1,
+        wins_count: (prof?.total_wins ?? 0) + (report.winner === "user" ? 1 : 0),
+        streak_days: streak,
+        debate_score: report.overall,
+        level: newLevel,
+      };
+      for (const a of achievements ?? []) {
+        if (ownedSet.has(a.id)) continue;
+        const c = a.criteria as { type?: string; gte?: number };
+        if (c.type && typeof c.gte === "number" && (stats[c.type] ?? 0) >= c.gte) {
+          await context.supabase
+            .from("user_achievements")
+            .insert({ user_id: context.userId, achievement_id: a.id });
+        }
+      }
     } catch (err) {
       console.error("xp award failed", err);
     }
 
     return { report };
   });
+
 
 
 export const suggestTopicsFn = createServerFn({ method: "POST" })
