@@ -48,8 +48,8 @@ function AuthPage() {
     setBusy(true);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email,
+        const { data, error } = await supabase.auth.signUp({
+          email: email.trim(),
           password,
           options: {
             emailRedirectTo: window.location.origin,
@@ -57,17 +57,36 @@ function AuthPage() {
           },
         });
         if (error) throw error;
-        toast.success("Account created — signing you in…");
+        if (data.session) {
+          toast.success("Account created — signing you in…");
+        } else {
+          toast.success("Account created. Check your email to confirm, then sign in.");
+          setMode("signin");
+        }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
         if (error) throw error;
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Auth failed");
+      const msg = err instanceof Error ? err.message : "Auth failed";
+      if (/failed to fetch|networkerror|load failed/i.test(msg)) {
+        toast.error("Network hiccup reaching the server. Please try again.");
+      } else if (/already registered|already been registered/i.test(msg)) {
+        toast.error("That email already has an account — try signing in.");
+        setMode("signin");
+      } else if (/email not confirmed/i.test(msg)) {
+        toast.error("Email not confirmed yet. Check your inbox for the confirmation link.");
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setBusy(false);
     }
   };
+
 
   const handleGoogle = async () => {
     setBusy(true);
